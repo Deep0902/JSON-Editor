@@ -1,6 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
+
+interface TreeAction {
+  mode: 'expand' | 'collapse';
+  version: number;
+}
 
 interface TreeNodeProps {
   nodeKey: string;
@@ -8,13 +13,18 @@ interface TreeNodeProps {
   level: number;
   onEdit?: (path: string, value: unknown) => void;
   path?: string;
+  treeAction: TreeAction;
 }
 
-function TreeNode({ nodeKey, value, level, onEdit, path = '' }: TreeNodeProps) {
+function TreeNode({ nodeKey, value, level, onEdit, path = '', treeAction }: TreeNodeProps) {
   const [isExpanded, setIsExpanded] = useState(level < 2);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const currentPath = path ? `${path}.${nodeKey}` : nodeKey;
+
+  useEffect(() => {
+    setIsExpanded(treeAction.mode === 'expand');
+  }, [treeAction]);
 
   const handleEdit = (newValue: string) => {
     if (typeof value === 'boolean') {
@@ -130,6 +140,7 @@ function TreeNode({ nodeKey, value, level, onEdit, path = '' }: TreeNodeProps) {
             level={level + 1}
             onEdit={onEdit}
             path={currentPath}
+            treeAction={treeAction}
           />
         ))}
     </div>
@@ -142,6 +153,18 @@ interface JSONTreeViewProps {
 }
 
 export default function JSONTreeView({ data, onEdit }: JSONTreeViewProps) {
+  const [treeAction, setTreeAction] = useState<TreeAction>({
+    mode: 'expand',
+    version: 0,
+  });
+
+  const updateTreeAction = (mode: TreeAction['mode']) => {
+    setTreeAction((current) => ({
+      mode,
+      version: current.version + 1,
+    }));
+  };
+
   if (data === null || typeof data !== 'object') {
     return (
       <div className="p-4 text-gray-600">
@@ -160,10 +183,28 @@ export default function JSONTreeView({ data, onEdit }: JSONTreeViewProps) {
 
   return (
     <div className="p-4 overflow-auto max-h-130 bg-white border border-gray-200 rounded-lg">
-      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200">
-        <span className="text-gray-600 font-bold">▼</span>
-        <span className="font-semibold text-gray-900">Root</span>
-        <span className="text-gray-500 text-sm">{isArray ? `[${entries.length}]` : `{${entries.length}}`}</span>
+      <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-gray-200">
+        <div className="flex items-center gap-2">
+          <span className="text-gray-600 font-bold">▼</span>
+          <span className="font-semibold text-gray-900">Root</span>
+          <span className="text-gray-500 text-sm">{isArray ? `[${entries.length}]` : `{${entries.length}}`}</span>
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => updateTreeAction('expand')}
+            className="px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200"
+          >
+            Expand All
+          </button>
+          <button
+            type="button"
+            onClick={() => updateTreeAction('collapse')}
+            className="px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200"
+          >
+            Collapse All
+          </button>
+        </div>
       </div>
       {entries.map(([key, value]) => (
         <TreeNode
@@ -172,6 +213,7 @@ export default function JSONTreeView({ data, onEdit }: JSONTreeViewProps) {
           value={value}
           level={0}
           onEdit={onEdit}
+          treeAction={treeAction}
         />
       ))}
     </div>

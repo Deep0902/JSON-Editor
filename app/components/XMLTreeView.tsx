@@ -1,7 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { type XMLNode } from '../utils/xmlValidator';
+
+interface TreeAction {
+  mode: 'expand' | 'collapse';
+  version: number;
+}
 
 interface XMLTreeViewProps {
   data: XMLNode;
@@ -13,12 +18,17 @@ interface TreeNodeProps {
   path: string;
   level: number;
   onEdit?: (path: string, value: string) => void;
+  treeAction: TreeAction;
 }
 
-function TreeNode({ node, path, level, onEdit }: TreeNodeProps) {
+function TreeNode({ node, path, level, onEdit, treeAction }: TreeNodeProps) {
   const [isExpanded, setIsExpanded] = useState(level < 2);
   const [editingPath, setEditingPath] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+
+  useEffect(() => {
+    setIsExpanded(treeAction.mode === 'expand');
+  }, [treeAction]);
 
   const beginEdit = (targetPath: string, value: string) => {
     setEditingPath(targetPath);
@@ -110,6 +120,7 @@ function TreeNode({ node, path, level, onEdit }: TreeNodeProps) {
               path={`${path}.children.${index}`}
               level={level + 1}
               onEdit={onEdit}
+              treeAction={treeAction}
             />
           ))}
         </div>
@@ -119,9 +130,37 @@ function TreeNode({ node, path, level, onEdit }: TreeNodeProps) {
 }
 
 export default function XMLTreeView({ data, onEdit }: XMLTreeViewProps) {
+  const [treeAction, setTreeAction] = useState<TreeAction>({
+    mode: 'expand',
+    version: 0,
+  });
+
+  const updateTreeAction = (mode: TreeAction['mode']) => {
+    setTreeAction((current) => ({
+      mode,
+      version: current.version + 1,
+    }));
+  };
+
   return (
     <div className="p-4 overflow-auto max-h-130 bg-white border border-gray-200 rounded-lg">
-      <TreeNode node={data} path="root" level={0} onEdit={onEdit} />
+      <div className="flex items-center justify-end gap-2 mb-4 pb-3 border-b border-gray-200">
+        <button
+          type="button"
+          onClick={() => updateTreeAction('expand')}
+          className="px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200"
+        >
+          Expand All
+        </button>
+        <button
+          type="button"
+          onClick={() => updateTreeAction('collapse')}
+          className="px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200"
+        >
+          Collapse All
+        </button>
+      </div>
+      <TreeNode node={data} path="root" level={0} onEdit={onEdit} treeAction={treeAction} />
     </div>
   );
 }
