@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JSON Editor - Real-time JSON Validator & Viewer",
-  description: "A real-time JSON editor with validation, tree view, table view, and editing capabilities without Ads!",
+  title: "JSON/XML Editor - Real-time JSON/XML Validator & Viewer",
+  description: "A real-time JSON & XML editor with validation, tree view, table view, and editing capabilities without Ads!",
 };
 
 export default function RootLayout({
