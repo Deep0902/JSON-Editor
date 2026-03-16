@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import JSONTreeView from './JSONTreeView';
 import JSONTableView from './JSONTableView';
 
@@ -10,8 +9,6 @@ interface JSONViewerProps {
 }
 
 export default function JSONViewer({ data, onDataChange }: JSONViewerProps) {
-  const [activeTab, setActiveTab] = useState<'tree' | 'table'>('tree');
-
   const handleEdit = (path: string, value: unknown) => {
     const newData = JSON.parse(JSON.stringify(data)); // Deep clone
     const pathParts = path.split('.');
@@ -51,32 +48,15 @@ export default function JSONViewer({ data, onDataChange }: JSONViewerProps) {
   return (
     <div className="flex flex-col gap-3">
       <label className="text-sm font-semibold text-gray-900">JSON Output (Editable)</label>
-      
-      <div className="flex gap-2 border-b border-gray-200">
-        <button
-          onClick={() => setActiveTab('tree')}
-          className={`px-4 py-2 font-medium transition-colors duration-200 ${
-            activeTab === 'tree'
-              ? 'border-b-2 border-gray-900 text-gray-900'
-              : 'text-gray-600 hover:text-gray-800'
-          }`}
-        >
-          Tree View
-        </button>
-        <button
-          onClick={() => setActiveTab('table')}
-          className={`px-4 py-2 font-medium transition-colors duration-200 ${
-            activeTab === 'table'
-              ? 'border-b-2 border-gray-900 text-gray-900'
-              : 'text-gray-600 hover:text-gray-800'
-          }`}
-        >
-          Table View
-        </button>
-      </div>
 
-      {activeTab === 'tree' && <JSONTreeView data={data} onEdit={handleEdit} />}
-      {activeTab === 'table' && <JSONTableView data={data} onEdit={handleEdit} />}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="min-w-0 overflow-auto max-h-130">
+          <JSONTreeView data={data} onEdit={handleEdit} />
+        </div>
+        <div className="min-w-0 overflow-auto max-h-130">
+          <JSONTableView data={data} onEdit={handleEdit} />
+        </div>
+      </div>
     </div>
   );
 }
