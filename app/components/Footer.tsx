@@ -1,0 +1,41 @@
+import React from "react";
+
+const Footer = () => {
+  return (
+    <footer className="mt-10 border-t border-gray-200 bg-white px-6 py-4 text-sm text-gray-600">
+      <div className="mx-auto flex md:flex-col items-center justify-between gap-3 md:flex-row md:gap-0 md:px-8">
+        <p className="text-center text-xs md:text-sm">
+          Built with ❤️ Need help or want to connect?
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <a
+            href="https://github.com/Deep0902"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="rounded-md px-2 py-1 font-medium text-blue-600 transition hover:bg-blue-50"
+          >
+            GitHub
+          </a>
+          <a
+            href="https://deeps-resume.vercel.app/about"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="rounded-md px-2 py-1 font-medium text-blue-600 transition hover:bg-blue-50"
+          >
+            Portfolio
+          </a>
+          <a
+            href="https://www.linkedin.com/in/deeprakesh/"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="rounded-md px-2 py-1 font-medium text-blue-600 transition hover:bg-blue-50"
+          >
+            LinkedIn
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;
