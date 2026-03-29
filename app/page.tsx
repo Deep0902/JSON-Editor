@@ -53,6 +53,45 @@ export default function Home() {
     setJsonError(null);
   };
 
+  const demoJSON =
+    '{"name":"Tom Cat", "friendName": "Jerry Mouse", "age":20,"city":"New York","skills":["JavaScript","React","Node.js", "Angular"]}';
+
+  const handleTryDemoJSON = () => {
+    setJsonInput(demoJSON);
+    setJsonError(null);
+
+    if (!isValidJSON(demoJSON)) {
+      setJsonError("The demo JSON is invalid.");
+      setParsedJSONData(null);
+      return;
+    }
+
+    const data = parseJSON(demoJSON);
+    setParsedJSONData(data);
+  };
+
+  const demoXML = `<?xml version="1.0" encoding="UTF-8"?>
+<book>
+    <name>A Song of Ice and Fire</name>
+    <author>George R. R. Martin</author>
+    <language>English</language>
+    <genre>Epic fantasy</genre>
+</book>
+`;
+  const handleTryDemoXML = () => {
+    setXmlInput(demoXML);
+    setXmlError(null);
+
+    if (!isValidXML(demoXML)) {
+      setXmlError("The demo XML is invalid.");
+      setParsedXMLData(null);
+      return;
+    }
+
+    const data = parseXML(demoXML);
+    setParsedXMLData(data);
+  };
+
   const handleValidateXML = () => {
     setXmlError(null);
 
@@ -102,7 +141,7 @@ export default function Home() {
         <div className="flex gap-2 border-b border-gray-200 mb-8">
           <button
             onClick={() => setActiveMainTab("json")}
-            className={`px-4 py-2 font-semibold transition-colors duration-200 ${
+            className={`px-4 py-2 font-semibold transition-colors duration-200 cursor-pointer ${
               activeMainTab === "json"
                 ? "border-b-2 border-gray-900 text-gray-900"
                 : "text-gray-600 hover:text-gray-800"
@@ -112,7 +151,7 @@ export default function Home() {
           </button>
           <button
             onClick={() => setActiveMainTab("xml")}
-            className={`px-4 py-2 font-semibold transition-colors duration-200 ${
+            className={`px-4 py-2 font-semibold transition-colors duration-200 cursor-pointer ${
               activeMainTab === "xml"
                 ? "border-b-2 border-gray-900 text-gray-900"
                 : "text-gray-600 hover:text-gray-800"
@@ -131,12 +170,14 @@ export default function Home() {
                 value={jsonInput}
                 onChange={handleJSONInputChange}
                 onValidate={handleValidateJSON}
+                onTryDemo={handleTryDemoJSON}
               />
             ) : (
               <XMLInput
                 value={xmlInput}
                 onChange={handleXMLInputChange}
                 onValidate={handleValidateXML}
+                onTryDemo={handleTryDemoXML}
               />
             )}
           </div>
@@ -213,16 +254,16 @@ export default function Home() {
           </div>
           <div className="p-4 bg-white border border-gray-200 rounded-lg">
             <h3 className="font-semibold text-gray-900 mb-2">
-              📊 Multiple Views
+              🔐 Privacy First
             </h3>
             <p className="text-sm text-gray-600">
-              Switch between tree and table views for both formats
+              Data never leaves your machine!
             </p>
           </div>
           <div className="p-4 bg-white border border-gray-200 rounded-lg">
             <h3 className="font-semibold text-gray-900 mb-2">✎ Full Editing</h3>
             <p className="text-sm text-gray-600">
-              Edit structured data directly and copy formatted output easily
+              Edit structured data and switch between tree and table views
             </p>
           </div>
         </div>

@@ -82,7 +82,7 @@ export default function XMLTableView({ data, onEdit }: XMLTableViewProps) {
               }`}
             >
               <td className="px-4 py-2 text-gray-900 font-semibold border-r border-gray-200">{row.label}</td>
-              <td className="px-4 py-2 text-gray-700 border-r border-gray-200 break-all font-mono text-xs max-w-xs">
+              <td className="px-4 py-2 text-gray-700 border-r border-gray-200 break-all font-mono text-xs max-w-xs whitespace-nowrap">
                 {row.type === 'element' ? (
                   <span>{row.value}</span>
                 ) : editingPath === row.internalPath ? (
