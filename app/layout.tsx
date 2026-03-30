@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JSON/XML Editor - Real-time JSON/XML Validator & Viewer",
+  title: "JSON/XML Editor",
   description:
     "A real-time JSON & XML editor with validation, tree view, table view, and editing capabilities without Ads!",
 };

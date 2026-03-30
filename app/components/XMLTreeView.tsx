@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { type XMLNode } from '../utils/xmlValidator';
+import { useEffect, useState } from "react";
+import { type XMLNode } from "../utils/xmlValidator";
 
 interface TreeAction {
-  mode: 'expand' | 'collapse';
+  mode: "expand" | "collapse";
   version: number;
 }
 
@@ -24,10 +24,10 @@ interface TreeNodeProps {
 function TreeNode({ node, path, level, onEdit, treeAction }: TreeNodeProps) {
   const [isExpanded, setIsExpanded] = useState(level < 2);
   const [editingPath, setEditingPath] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState('');
+  const [editValue, setEditValue] = useState("");
 
   useEffect(() => {
-    setIsExpanded(treeAction.mode === 'expand');
+    setIsExpanded(treeAction.mode === "expand");
   }, [treeAction]);
 
   const beginEdit = (targetPath: string, value: string) => {
@@ -47,9 +47,13 @@ function TreeNode({ node, path, level, onEdit, treeAction }: TreeNodeProps) {
         className="py-1 cursor-pointer flex items-center gap-2 text-gray-700 hover:bg-gray-100 px-2 rounded"
         onClick={() => setIsExpanded((prev) => !prev)}
       >
-        <span className="text-gray-600 font-bold select-none">{isExpanded ? '▼' : '▶'}</span>
+        <span className="text-gray-600 font-bold select-none">
+          {isExpanded ? "▼" : "▶"}
+        </span>
         <span className="font-semibold text-gray-900">&lt;{node.tag}&gt;</span>
-        <span className="text-gray-500 text-sm">children: {node.children.length}</span>
+        <span className="text-gray-500 text-sm">
+          children: {node.children.length}
+        </span>
       </div>
 
       {isExpanded && (
@@ -71,8 +75,8 @@ function TreeNode({ node, path, level, onEdit, treeAction }: TreeNodeProps) {
                     onChange={(e) => setEditValue(e.target.value)}
                     onBlur={() => saveEdit(attributePath)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') saveEdit(attributePath);
-                      if (e.key === 'Escape') setEditingPath(null);
+                      if (e.key === "Enter") saveEdit(attributePath);
+                      if (e.key === "Escape") setEditingPath(null);
                     }}
                     className="ml-2 px-2 py-1 border border-gray-300 rounded text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-400"
                   />
@@ -88,7 +92,10 @@ function TreeNode({ node, path, level, onEdit, treeAction }: TreeNodeProps) {
             );
           })}
 
-          <div style={{ paddingLeft: `${(level + 1) * 20}px` }} className="py-1 text-sm">
+          <div
+            style={{ paddingLeft: `${(level + 1) * 20}px` }}
+            className="py-1 text-sm"
+          >
             <span className="font-semibold text-green-700">#text:</span>
             {editingPath === `${path}.text` ? (
               <input
@@ -98,8 +105,8 @@ function TreeNode({ node, path, level, onEdit, treeAction }: TreeNodeProps) {
                 onChange={(e) => setEditValue(e.target.value)}
                 onBlur={() => saveEdit(`${path}.text`)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') saveEdit(`${path}.text`);
-                  if (e.key === 'Escape') setEditingPath(null);
+                  if (e.key === "Enter") saveEdit(`${path}.text`);
+                  if (e.key === "Escape") setEditingPath(null);
                 }}
                 className="ml-2 px-2 py-1 border border-gray-300 rounded text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-400"
               />
@@ -108,7 +115,7 @@ function TreeNode({ node, path, level, onEdit, treeAction }: TreeNodeProps) {
                 onClick={() => beginEdit(`${path}.text`, node.text)}
                 className="ml-2 text-green-700 cursor-pointer hover:bg-green-50 px-1 rounded"
               >
-                {node.text || '(empty)'}
+                {node.text || "(empty)"}
               </span>
             )}
           </div>
@@ -131,11 +138,11 @@ function TreeNode({ node, path, level, onEdit, treeAction }: TreeNodeProps) {
 
 export default function XMLTreeView({ data, onEdit }: XMLTreeViewProps) {
   const [treeAction, setTreeAction] = useState<TreeAction>({
-    mode: 'expand',
+    mode: "expand",
     version: 0,
   });
 
-  const updateTreeAction = (mode: TreeAction['mode']) => {
+  const updateTreeAction = (mode: TreeAction["mode"]) => {
     setTreeAction((current) => ({
       mode,
       version: current.version + 1,
@@ -144,23 +151,32 @@ export default function XMLTreeView({ data, onEdit }: XMLTreeViewProps) {
 
   return (
     <div className="p-4 overflow-auto max-h-130 bg-white border border-gray-200 rounded-lg">
-      <div className="flex items-center justify-end gap-2 mb-4 pb-3 border-b border-gray-200">
-        <button
-          type="button"
-          onClick={() => updateTreeAction('expand')}
-          className="px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200"
-        >
-          Expand All
-        </button>
-        <button
-          type="button"
-          onClick={() => updateTreeAction('collapse')}
-          className="px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200"
-        >
-          Collapse All
-        </button>
+      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200">
+        <span className="text-md font-medium">Tree View</span>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => updateTreeAction("expand")}
+            className="px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200 cursor-pointer"
+          >
+            Expand All
+          </button>
+          <button
+            type="button"
+            onClick={() => updateTreeAction("collapse")}
+            className="px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200 cursor-pointer"
+          >
+            Collapse All
+          </button>
+        </div>
       </div>
-      <TreeNode node={data} path="root" level={0} onEdit={onEdit} treeAction={treeAction} />
+      <TreeNode
+        node={data}
+        path="root"
+        level={0}
+        onEdit={onEdit}
+        treeAction={treeAction}
+      />
     </div>
   );
 }

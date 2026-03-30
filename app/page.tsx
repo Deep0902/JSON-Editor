@@ -31,7 +31,6 @@ export default function Home() {
 
     if (!isValidJSON(jsonInput)) {
       setJsonError("The JSON is invalid.");
-      alert("The JSON is invalid.");
       return;
     }
 
@@ -53,9 +52,8 @@ export default function Home() {
     setJsonError(null);
   };
 
-  const demoJSON =
-    '{"name":"Tom Cat", "friendName": "Jerry Mouse", "age":20,"city":"New York","skills":["JavaScript","React","Node.js", "Angular"]}';
-
+  const demoJSON = `{"name":"Tom Cat","age":20,"isActive":true,"skills":["JS","React"],"address":{"city":"NYC","zip":10001},"lastLogin":null}
+`;
   const handleTryDemoJSON = () => {
     setJsonInput(demoJSON);
     setJsonError(null);
@@ -70,14 +68,8 @@ export default function Home() {
     setParsedJSONData(data);
   };
 
-  const demoXML = `<?xml version="1.0" encoding="UTF-8"?>
-<book>
-    <name>A Song of Ice and Fire</name>
-    <author>George R. R. Martin</author>
-    <language>English</language>
-    <genre>Epic fantasy</genre>
-</book>
-`;
+  const demoXML = `<?xml version="1.0" encoding="UTF-8"?><user xmlns:xsi="http://www.w3.org"><name>Tom Cat</name><age>20</age><isActive>true</isActive><skills><skill>JS</skill><skill>React</skill></skills><address><city>NYC</city><zip>10001</zip></address><lastLogin xsi:nil="true"/></user>
+`
   const handleTryDemoXML = () => {
     setXmlInput(demoXML);
     setXmlError(null);
@@ -102,7 +94,6 @@ export default function Home() {
 
     if (!isValidXML(xmlInput)) {
       setXmlError("The XML is invalid.");
-      alert("The XML is invalid.");
       return;
     }
 
@@ -182,6 +173,18 @@ export default function Home() {
             )}
           </div>
 
+          {/* Error Message */}
+          {activeMainTab === "json" && jsonError && (
+            <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-500 rounded">
+              <p className="text-red-700 font-medium">{jsonError}</p>
+            </div>
+          )}
+          {activeMainTab === "xml" && xmlError && (
+            <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-500 rounded">
+              <p className="text-red-700 font-medium">{xmlError}</p>
+            </div>
+          )}
+
           {/* Right Column - Viewer */}
           <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
             {activeMainTab === "json" ? (
@@ -213,18 +216,6 @@ export default function Home() {
             )}
           </div>
         </div>
-
-        {/* Error Message */}
-        {activeMainTab === "json" && jsonError && (
-          <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-500 rounded">
-            <p className="text-red-700 font-medium">{jsonError}</p>
-          </div>
-        )}
-        {activeMainTab === "xml" && xmlError && (
-          <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-500 rounded">
-            <p className="text-red-700 font-medium">{xmlError}</p>
-          </div>
-        )}
 
         {/* Editor Section - Full Width */}
         {activeMainTab === "json" && parsedJSONData !== null && (

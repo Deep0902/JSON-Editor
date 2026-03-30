@@ -193,14 +193,14 @@ export default function JSONTreeView({ data, onEdit }: JSONTreeViewProps) {
           <button
             type="button"
             onClick={() => updateTreeAction('expand')}
-            className="px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200"
+            className="px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200 cursor-pointer"
           >
             Expand All
           </button>
           <button
             type="button"
             onClick={() => updateTreeAction('collapse')}
-            className="px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200"
+            className="px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200 cursor-pointer"
           >
             Collapse All
           </button>
