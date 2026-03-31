@@ -1,7 +1,9 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import XMLTreeView from './XMLTreeView';
-import XMLTableView from './XMLTableView';
+import XMLTableView, { flattenXML } from './XMLTableView';
+import SearchToolbar, { matchesSearch } from './ViewerSearch';
 import { type XMLNode } from '../utils/xmlValidator';
 
 interface XMLViewerProps {
@@ -57,22 +59,44 @@ function setByPath(target: unknown, path: string, value: string): void {
 }
 
 export default function XMLViewer({ data, onDataChange }: XMLViewerProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+
   const handleEdit = (path: string, value: string) => {
     const newData = deepClone(data);
     setByPath(newData, path, value);
     onDataChange?.(newData);
   };
 
+  const matchCount = useMemo(
+    () =>
+      flattenXML(data).filter((row) =>
+        matchesSearch(
+          searchQuery,
+          row.label,
+          row.value,
+          row.type,
+          row.displayPath,
+        ),
+      ).length,
+    [data, searchQuery],
+  );
+
   return (
     <div className="flex flex-col gap-3">
       <label className="text-sm font-semibold text-gray-900">XML Output (Editable)</label>
+      <SearchToolbar
+        query={searchQuery}
+        onQueryChange={setSearchQuery}
+        matchCount={matchCount}
+        placeholder="Search XML tags, values, attributes, or paths"
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="min-w-0 overflow-auto max-h-130">
-          <XMLTreeView data={data} onEdit={handleEdit} />
+          <XMLTreeView data={data} onEdit={handleEdit} searchQuery={searchQuery} />
         </div>
         <div className="min-w-0 overflow-auto max-h-130">
-          <XMLTableView data={data} onEdit={handleEdit} />
+          <XMLTableView data={data} onEdit={handleEdit} searchQuery={searchQuery} />
         </div>
       </div>
     </div>

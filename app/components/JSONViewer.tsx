@@ -1,7 +1,9 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import JSONTreeView from './JSONTreeView';
-import JSONTableView from './JSONTableView';
+import JSONTableView, { flattenJSON } from './JSONTableView';
+import SearchToolbar, { matchesSearch } from './ViewerSearch';
 
 interface JSONViewerProps {
   data: unknown;
@@ -9,6 +11,8 @@ interface JSONViewerProps {
 }
 
 export default function JSONViewer({ data, onDataChange }: JSONViewerProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+
   const handleEdit = (path: string, value: unknown) => {
     const newData = JSON.parse(JSON.stringify(data)); // Deep clone
     const pathParts = path.split('.');
@@ -45,16 +49,30 @@ export default function JSONViewer({ data, onDataChange }: JSONViewerProps) {
     onDataChange?.(newData);
   };
 
+  const matchCount = useMemo(
+    () =>
+      flattenJSON(data).filter((row) =>
+        matchesSearch(searchQuery, row.key, row.value, row.type, row.path),
+      ).length,
+    [data, searchQuery],
+  );
+
   return (
     <div className="flex flex-col gap-3">
       <label className="text-sm font-semibold text-gray-900">JSON Output (Editable)</label>
+      <SearchToolbar
+        query={searchQuery}
+        onQueryChange={setSearchQuery}
+        matchCount={matchCount}
+        placeholder="Search JSON keys, values, or paths"
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="min-w-0 overflow-auto max-h-130">
-          <JSONTreeView data={data} onEdit={handleEdit} />
+          <JSONTreeView data={data} onEdit={handleEdit} searchQuery={searchQuery} />
         </div>
         <div className="min-w-0 overflow-auto max-h-130">
-          <JSONTableView data={data} onEdit={handleEdit} />
+          <JSONTableView data={data} onEdit={handleEdit} searchQuery={searchQuery} />
         </div>
       </div>
     </div>

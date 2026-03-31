@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import JSONInput from "./components/JSONInput";
 import JSONViewer from "./components/JSONViewer";
 import JSONEditor from "./components/JSONEditor";
@@ -12,6 +12,8 @@ import { isValidXML, parseXML, type XMLNode } from "./utils/xmlValidator";
 
 export default function Home() {
   const [activeMainTab, setActiveMainTab] = useState<"json" | "xml">("json");
+  const outputSectionRef = useRef<HTMLDivElement | null>(null);
+  const pendingAutoScrollRef = useRef(false);
 
   const [jsonInput, setJsonInput] = useState("");
   const [parsedJSONData, setParsedJSONData] = useState<unknown | null>(null);
@@ -21,19 +23,43 @@ export default function Home() {
   const [parsedXMLData, setParsedXMLData] = useState<XMLNode | null>(null);
   const [xmlError, setXmlError] = useState<string | null>(null);
 
+  const scrollToOutputSection = () => {
+    outputSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  useEffect(() => {
+    const hasParsedOutput =
+      activeMainTab === "json"
+        ? parsedJSONData !== null
+        : parsedXMLData !== null;
+
+    if (!pendingAutoScrollRef.current || !hasParsedOutput) {
+      return;
+    }
+
+    pendingAutoScrollRef.current = false;
+    requestAnimationFrame(scrollToOutputSection);
+  }, [activeMainTab, parsedJSONData, parsedXMLData]);
+
   const handleValidateJSON = () => {
     setJsonError(null);
 
     if (!jsonInput.trim()) {
+      pendingAutoScrollRef.current = false;
       setJsonError("Please enter JSON data");
       return;
     }
 
     if (!isValidJSON(jsonInput)) {
+      pendingAutoScrollRef.current = false;
       setJsonError("The JSON is invalid.");
       return;
     }
 
+    pendingAutoScrollRef.current = true;
     const data = parseJSON(jsonInput);
     setParsedJSONData(data);
   };
@@ -59,11 +85,13 @@ export default function Home() {
     setJsonError(null);
 
     if (!isValidJSON(demoJSON)) {
+      pendingAutoScrollRef.current = false;
       setJsonError("The demo JSON is invalid.");
       setParsedJSONData(null);
       return;
     }
 
+    pendingAutoScrollRef.current = true;
     const data = parseJSON(demoJSON);
     setParsedJSONData(data);
   };
@@ -75,11 +103,13 @@ export default function Home() {
     setXmlError(null);
 
     if (!isValidXML(demoXML)) {
+      pendingAutoScrollRef.current = false;
       setXmlError("The demo XML is invalid.");
       setParsedXMLData(null);
       return;
     }
 
+    pendingAutoScrollRef.current = true;
     const data = parseXML(demoXML);
     setParsedXMLData(data);
   };
@@ -88,15 +118,18 @@ export default function Home() {
     setXmlError(null);
 
     if (!xmlInput.trim()) {
+      pendingAutoScrollRef.current = false;
       setXmlError("Please enter XML data");
       return;
     }
 
     if (!isValidXML(xmlInput)) {
+      pendingAutoScrollRef.current = false;
       setXmlError("The XML is invalid.");
       return;
     }
 
+    pendingAutoScrollRef.current = true;
     const data = parseXML(xmlInput);
     setParsedXMLData(data);
   };
@@ -186,7 +219,10 @@ export default function Home() {
           )}
 
           {/* Right Column - Viewer */}
-          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <div
+            ref={outputSectionRef}
+            className="scroll-mt-24 bg-gray-50 p-6 rounded-lg border border-gray-200"
+          >
             {activeMainTab === "json" ? (
               parsedJSONData === null ? (
                 <div className="text-center py-12 text-gray-500">

@@ -1,4 +1,6 @@
-'use client';
+"use client";
+
+import { useEffect, useRef } from "react";
 
 interface JSONInputProps {
   value: string;
@@ -7,14 +9,27 @@ interface JSONInputProps {
   onTryDemo: () => void;
 }
 
-export default function JSONInput({ value, onChange, onValidate, onTryDemo }: JSONInputProps) {
+export default function JSONInput({
+  value,
+  onChange,
+  onValidate,
+  onTryDemo,
+}: JSONInputProps) {
+  const inputref = useRef<any>(null);
+  useEffect(() => {
+    inputref.current.focus();
+  }, []);
   return (
     <div className="flex flex-col gap-3">
-      <label htmlFor="json-input" className="text-sm font-semibold text-gray-900">
+      <label
+        htmlFor="json-input"
+        className="text-sm font-semibold text-gray-900"
+      >
         Paste Your JSON Data
       </label>
       <textarea
         id="json-input"
+        ref={inputref}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Paste your JSON data here..."

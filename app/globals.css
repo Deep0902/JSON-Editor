@@ -1,1 +1,32 @@
 @import "tailwindcss";
+
+@keyframes search-highlight-glow {
+  0% {
+    background-color: color-mix(in oklab, #4d9cfc 45%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in oklab, #0b0bf5 18%, transparent);
+  }
+
+  50% {
+    background-color: color-mix(in oklab, #4d9cfc 58%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in oklab, #0b0bf5 16%, transparent);
+  }
+
+  100% {
+    background-color: color-mix(in oklab, #4d9cfc 45%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in oklab, #0b0bf5 10%, transparent);
+  }
+}
+
+.search-highlight-glow {
+  animation: search-highlight-glow 1.8s ease-in-out infinite;
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .search-highlight-glow {
+    animation: none;
+  }
+}

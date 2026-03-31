@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { HighlightedText, matchesSearch, normalizeSearchQuery } from './ViewerSearch';
 
 interface TreeAction {
   mode: 'expand' | 'collapse';
@@ -14,13 +15,30 @@ interface TreeNodeProps {
   onEdit?: (path: string, value: unknown) => void;
   path?: string;
   treeAction: TreeAction;
+  searchQuery: string;
+  matchedPaths: Set<string>;
+  expandedPaths: Set<string>;
 }
 
-function TreeNode({ nodeKey, value, level, onEdit, path = '', treeAction }: TreeNodeProps) {
+function TreeNode({
+  nodeKey,
+  value,
+  level,
+  onEdit,
+  path = '',
+  treeAction,
+  searchQuery,
+  matchedPaths,
+  expandedPaths,
+}: TreeNodeProps) {
   const [isExpanded, setIsExpanded] = useState(level < 2);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const currentPath = path ? `${path}.${nodeKey}` : nodeKey;
+  const hasSearchQuery = normalizeSearchQuery(searchQuery).length > 0;
+  const isMatched = matchedPaths.has(currentPath);
+  const shouldForceExpand = hasSearchQuery && expandedPaths.has(currentPath);
+  const showChildren = shouldForceExpand || isExpanded;
 
   useEffect(() => {
     setIsExpanded(treeAction.mode === 'expand');
@@ -45,8 +63,13 @@ function TreeNode({ nodeKey, value, level, onEdit, path = '', treeAction }: Tree
 
   if (value === null) {
     return (
-      <div style={{ paddingLeft: `${level * 20}px` }} className="py-1 text-gray-700 group">
-        <span className="font-semibold text-gray-900">{nodeKey}:</span>
+      <div
+        style={{ paddingLeft: `${level * 20}px` }}
+        className={`py-1 text-gray-700 group rounded ${isMatched ? 'bg-amber-50' : ''}`}
+      >
+        <span className="font-semibold text-gray-900">
+          <HighlightedText text={nodeKey} query={searchQuery} />:
+        </span>
         {isEditing ? (
           <input
             autoFocus
@@ -66,7 +89,7 @@ function TreeNode({ nodeKey, value, level, onEdit, path = '', treeAction }: Tree
             }}
             className="ml-2 text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
           >
-            null
+            <HighlightedText text="null" query={searchQuery} />
           </span>
         )}
       </div>
@@ -85,8 +108,13 @@ function TreeNode({ nodeKey, value, level, onEdit, path = '', treeAction }: Tree
           : 'text-green-600';
 
     return (
-      <div style={{ paddingLeft: `${level * 20}px` }} className="py-1 text-gray-700 group">
-        <span className="font-semibold text-gray-900">{nodeKey}:</span>
+      <div
+        style={{ paddingLeft: `${level * 20}px` }}
+        className={`py-1 text-gray-700 group rounded ${isMatched ? 'bg-amber-50' : ''}`}
+      >
+        <span className="font-semibold text-gray-900">
+          <HighlightedText text={nodeKey} query={searchQuery} />:
+        </span>
         {isEditing ? (
           <input
             autoFocus
@@ -105,7 +133,7 @@ function TreeNode({ nodeKey, value, level, onEdit, path = '', treeAction }: Tree
             }}
             className={`ml-2 ${typeColor} cursor-pointer hover:bg-gray-100 px-1 rounded`}
           >
-            {displayValue}
+            <HighlightedText text={displayValue} query={searchQuery} />
           </span>
         )}
       </div>
@@ -122,16 +150,20 @@ function TreeNode({ nodeKey, value, level, onEdit, path = '', treeAction }: Tree
     <div>
       <div
         style={{ paddingLeft: `${level * 20}px` }}
-        className="py-1 cursor-pointer flex items-center gap-2 text-gray-700 hover:bg-gray-100 px-2 rounded"
+        className={`py-1 cursor-pointer flex items-center gap-2 text-gray-700 px-2 rounded ${
+          isMatched ? 'bg-amber-50 hover:bg-amber-100' : 'hover:bg-gray-100'
+        }`}
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <span className="text-gray-600 font-bold select-none">{isExpanded ? '▼' : '▶'}</span>
-        <span className="font-semibold text-gray-900">{nodeKey}:</span>
+        <span className="text-gray-600 font-bold select-none">{showChildren ? '▼' : '▶'}</span>
+        <span className="font-semibold text-gray-900">
+          <HighlightedText text={nodeKey} query={searchQuery} />:
+        </span>
         <span className="text-gray-500 text-sm">
           {isArray ? `[${itemCount}]` : `{${itemCount}}`}
         </span>
       </div>
-      {isExpanded &&
+      {showChildren &&
         entries.map(([key, val]) => (
           <TreeNode
             key={`${currentPath}-${key}`}
@@ -141,22 +173,85 @@ function TreeNode({ nodeKey, value, level, onEdit, path = '', treeAction }: Tree
             onEdit={onEdit}
             path={currentPath}
             treeAction={treeAction}
+            searchQuery={searchQuery}
+            matchedPaths={matchedPaths}
+            expandedPaths={expandedPaths}
           />
         ))}
     </div>
   );
 }
 
+function collectSearchPaths(data: unknown, searchQuery: string) {
+  const matchedPaths = new Set<string>();
+  const expandedPaths = new Set<string>();
+  const normalizedQuery = normalizeSearchQuery(searchQuery);
+
+  if (!normalizedQuery || data === null || typeof data !== 'object') {
+    return { matchedPaths, expandedPaths };
+  }
+
+  const visit = (nodeKey: string, value: unknown, path: string): boolean => {
+    const selfMatch = matchesSearch(
+      searchQuery,
+      nodeKey,
+      path,
+      value === null ? 'null' : typeof value === 'object' ? '' : String(value),
+    );
+
+    if (selfMatch) {
+      matchedPaths.add(path);
+    }
+
+    if (value === null || typeof value !== 'object') {
+      return selfMatch;
+    }
+
+    const entries: Array<[string, unknown]> = Array.isArray(value)
+      ? value.map((child, index) => [String(index), child] as [string, unknown])
+      : Object.entries(value as Record<string, unknown>);
+
+    const hasMatchingDescendant = entries.some(([childKey, childValue]) =>
+      visit(childKey, childValue, `${path}.${childKey}`),
+    );
+
+    if (selfMatch || hasMatchingDescendant) {
+      expandedPaths.add(path);
+    }
+
+    return selfMatch || hasMatchingDescendant;
+  };
+
+  const rootEntries: Array<[string, unknown]> = Array.isArray(data)
+    ? data.map((value, index) => [String(index), value] as [string, unknown])
+    : Object.entries(data as Record<string, unknown>);
+
+  rootEntries.forEach(([key, value]) => {
+    visit(key, value, key);
+  });
+
+  return { matchedPaths, expandedPaths };
+}
+
 interface JSONTreeViewProps {
   data: unknown;
   onEdit?: (path: string, value: unknown) => void;
+  searchQuery?: string;
 }
 
-export default function JSONTreeView({ data, onEdit }: JSONTreeViewProps) {
+export default function JSONTreeView({
+  data,
+  onEdit,
+  searchQuery = '',
+}: JSONTreeViewProps) {
   const [treeAction, setTreeAction] = useState<TreeAction>({
     mode: 'expand',
     version: 0,
   });
+  const { matchedPaths, expandedPaths } = useMemo(
+    () => collectSearchPaths(data, searchQuery),
+    [data, searchQuery],
+  );
 
   const updateTreeAction = (mode: TreeAction['mode']) => {
     setTreeAction((current) => ({
@@ -214,6 +309,9 @@ export default function JSONTreeView({ data, onEdit }: JSONTreeViewProps) {
           level={0}
           onEdit={onEdit}
           treeAction={treeAction}
+          searchQuery={searchQuery}
+          matchedPaths={matchedPaths}
+          expandedPaths={expandedPaths}
         />
       ))}
     </div>

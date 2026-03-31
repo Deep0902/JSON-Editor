@@ -1,7 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { type XMLNode } from "../utils/xmlValidator";
+import {
+  HighlightedText,
+  matchesSearch,
+  normalizeSearchQuery,
+} from "./ViewerSearch";
 
 interface TreeAction {
   mode: "expand" | "collapse";
@@ -11,6 +16,7 @@ interface TreeAction {
 interface XMLTreeViewProps {
   data: XMLNode;
   onEdit?: (path: string, value: string) => void;
+  searchQuery?: string;
 }
 
 interface TreeNodeProps {
@@ -19,12 +25,32 @@ interface TreeNodeProps {
   level: number;
   onEdit?: (path: string, value: string) => void;
   treeAction: TreeAction;
+  searchQuery: string;
+  matchedPaths: Set<string>;
+  expandedPaths: Set<string>;
+  matchedAttributePaths: Set<string>;
+  matchedTextPaths: Set<string>;
 }
 
-function TreeNode({ node, path, level, onEdit, treeAction }: TreeNodeProps) {
+function TreeNode({
+  node,
+  path,
+  level,
+  onEdit,
+  treeAction,
+  searchQuery,
+  matchedPaths,
+  expandedPaths,
+  matchedAttributePaths,
+  matchedTextPaths,
+}: TreeNodeProps) {
   const [isExpanded, setIsExpanded] = useState(level < 2);
   const [editingPath, setEditingPath] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const hasSearchQuery = normalizeSearchQuery(searchQuery).length > 0;
+  const isMatched = matchedPaths.has(path);
+  const shouldForceExpand = hasSearchQuery && expandedPaths.has(path);
+  const showChildren = shouldForceExpand || isExpanded;
 
   useEffect(() => {
     setIsExpanded(treeAction.mode === "expand");
@@ -44,29 +70,36 @@ function TreeNode({ node, path, level, onEdit, treeAction }: TreeNodeProps) {
     <div>
       <div
         style={{ paddingLeft: `${level * 20}px` }}
-        className="py-1 cursor-pointer flex items-center gap-2 text-gray-700 hover:bg-gray-100 px-2 rounded"
+        className={`py-1 cursor-pointer flex items-center gap-2 text-gray-700 px-2 rounded ${
+          isMatched ? "bg-amber-50 hover:bg-amber-100" : "hover:bg-gray-100"
+        }`}
         onClick={() => setIsExpanded((prev) => !prev)}
       >
         <span className="text-gray-600 font-bold select-none">
-          {isExpanded ? "▼" : "▶"}
+          {showChildren ? "▼" : "▶"}
         </span>
-        <span className="font-semibold text-gray-900">&lt;{node.tag}&gt;</span>
+        <span className="font-semibold text-gray-900">
+          &lt;<HighlightedText text={node.tag} query={searchQuery} />&gt;
+        </span>
         <span className="text-gray-500 text-sm">
           children: {node.children.length}
         </span>
       </div>
 
-      {isExpanded && (
+      {showChildren && (
         <div>
           {Object.entries(node.attributes).map(([key, value]) => {
             const attributePath = `${path}.attributes.${key}`;
+            const isAttributeMatched = matchedAttributePaths.has(attributePath);
             return (
               <div
                 key={attributePath}
                 style={{ paddingLeft: `${(level + 1) * 20}px` }}
-                className="py-1 text-sm"
+                className={`py-1 text-sm rounded ${isAttributeMatched ? "bg-amber-50" : ""}`}
               >
-                <span className="font-semibold text-blue-700">@{key}:</span>
+                <span className="font-semibold text-blue-700">
+                  @<HighlightedText text={key} query={searchQuery} />:
+                </span>
                 {editingPath === attributePath ? (
                   <input
                     autoFocus
@@ -85,7 +118,7 @@ function TreeNode({ node, path, level, onEdit, treeAction }: TreeNodeProps) {
                     onClick={() => beginEdit(attributePath, value)}
                     className="ml-2 text-blue-600 cursor-pointer hover:bg-blue-50 px-1 rounded"
                   >
-                    {value}
+                    <HighlightedText text={value} query={searchQuery} />
                   </span>
                 )}
               </div>
@@ -94,7 +127,7 @@ function TreeNode({ node, path, level, onEdit, treeAction }: TreeNodeProps) {
 
           <div
             style={{ paddingLeft: `${(level + 1) * 20}px` }}
-            className="py-1 text-sm"
+            className={`py-1 text-sm rounded ${matchedTextPaths.has(`${path}.text`) ? "bg-amber-50" : ""}`}
           >
             <span className="font-semibold text-green-700">#text:</span>
             {editingPath === `${path}.text` ? (
@@ -115,7 +148,11 @@ function TreeNode({ node, path, level, onEdit, treeAction }: TreeNodeProps) {
                 onClick={() => beginEdit(`${path}.text`, node.text)}
                 className="ml-2 text-green-700 cursor-pointer hover:bg-green-50 px-1 rounded"
               >
-                {node.text || "(empty)"}
+                <HighlightedText
+                  text={node.text}
+                  query={searchQuery}
+                  emptyFallback="(empty)"
+                />
               </span>
             )}
           </div>
@@ -128,6 +165,11 @@ function TreeNode({ node, path, level, onEdit, treeAction }: TreeNodeProps) {
               level={level + 1}
               onEdit={onEdit}
               treeAction={treeAction}
+              searchQuery={searchQuery}
+              matchedPaths={matchedPaths}
+              expandedPaths={expandedPaths}
+              matchedAttributePaths={matchedAttributePaths}
+              matchedTextPaths={matchedTextPaths}
             />
           ))}
         </div>
@@ -136,11 +178,89 @@ function TreeNode({ node, path, level, onEdit, treeAction }: TreeNodeProps) {
   );
 }
 
-export default function XMLTreeView({ data, onEdit }: XMLTreeViewProps) {
+function collectSearchPaths(data: XMLNode, searchQuery: string) {
+  const matchedPaths = new Set<string>();
+  const expandedPaths = new Set<string>();
+  const matchedAttributePaths = new Set<string>();
+  const matchedTextPaths = new Set<string>();
+  const normalizedQuery = normalizeSearchQuery(searchQuery);
+
+  if (!normalizedQuery) {
+    return {
+      matchedPaths,
+      expandedPaths,
+      matchedAttributePaths,
+      matchedTextPaths,
+    };
+  }
+
+  const visit = (node: XMLNode, path: string, displayPath: string): boolean => {
+    const nodeMatched = matchesSearch(searchQuery, node.tag, displayPath, `<${node.tag}>`);
+
+    if (nodeMatched) {
+      matchedPaths.add(path);
+    }
+
+    const attributeMatched = Object.entries(node.attributes).some(([key, value]) => {
+      const attributePath = `${path}.attributes.${key}`;
+      const attributeDisplayPath = `${displayPath}/@${key}`;
+      const isMatched = matchesSearch(
+        searchQuery,
+        key,
+        value,
+        attributeDisplayPath,
+      );
+
+      if (isMatched) {
+        matchedAttributePaths.add(attributePath);
+      }
+
+      return isMatched;
+    });
+
+    const textPath = `${path}.text`;
+    const textMatched = matchesSearch(searchQuery, node.text, `${displayPath}/text()`);
+
+    if (textMatched) {
+      matchedTextPaths.add(textPath);
+    }
+
+    const childMatched = node.children.some((child, index) =>
+      visit(child, `${path}.children.${index}`, `${displayPath}/${child.tag}[${index}]`),
+    );
+
+    if (nodeMatched || attributeMatched || textMatched || childMatched) {
+      expandedPaths.add(path);
+    }
+
+    return nodeMatched || attributeMatched || textMatched || childMatched;
+  };
+
+  visit(data, "root", `/${data.tag}`);
+
+  return {
+    matchedPaths,
+    expandedPaths,
+    matchedAttributePaths,
+    matchedTextPaths,
+  };
+}
+
+export default function XMLTreeView({
+  data,
+  onEdit,
+  searchQuery = "",
+}: XMLTreeViewProps) {
   const [treeAction, setTreeAction] = useState<TreeAction>({
     mode: "expand",
     version: 0,
   });
+  const {
+    matchedPaths,
+    expandedPaths,
+    matchedAttributePaths,
+    matchedTextPaths,
+  } = useMemo(() => collectSearchPaths(data, searchQuery), [data, searchQuery]);
 
   const updateTreeAction = (mode: TreeAction["mode"]) => {
     setTreeAction((current) => ({
@@ -176,6 +296,11 @@ export default function XMLTreeView({ data, onEdit }: XMLTreeViewProps) {
         level={0}
         onEdit={onEdit}
         treeAction={treeAction}
+        searchQuery={searchQuery}
+        matchedPaths={matchedPaths}
+        expandedPaths={expandedPaths}
+        matchedAttributePaths={matchedAttributePaths}
+        matchedTextPaths={matchedTextPaths}
       />
     </div>
   );

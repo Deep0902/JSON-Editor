@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { HighlightedText, matchesSearch } from './ViewerSearch';
 
 interface TableRow {
   key: string;
@@ -9,7 +10,7 @@ interface TableRow {
   path: string;
 }
 
-function flattenJSON(obj: unknown, prefix = ''): TableRow[] {
+export function flattenJSON(obj: unknown, prefix = ''): TableRow[] {
   const rows: TableRow[] = [];
 
   function traverse(current: unknown, path: string) {
@@ -54,9 +55,14 @@ function flattenJSON(obj: unknown, prefix = ''): TableRow[] {
 interface JSONTableViewProps {
   data: unknown;
   onEdit?: (path: string, value: unknown) => void;
+  searchQuery?: string;
 }
 
-export default function JSONTableView({ data, onEdit }: JSONTableViewProps) {
+export default function JSONTableView({
+  data,
+  onEdit,
+  searchQuery = '',
+}: JSONTableViewProps) {
   const rows = useMemo(() => flattenJSON(data), [data]);
   const [editingPath, setEditingPath] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -110,14 +116,28 @@ export default function JSONTableView({ data, onEdit }: JSONTableViewProps) {
         </thead>
         <tbody className="overflow-y-auto">
           {rows.map((row, index) => (
+            (() => {
+              const isMatched = matchesSearch(
+                searchQuery,
+                row.key,
+                row.value,
+                row.type,
+                row.path,
+              );
+
+              return (
             <tr
               key={index}
-              className={`border-b border-gray-200 hover:bg-gray-50 transition-colors ${
-                index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+              className={`border-b border-gray-200 transition-colors ${
+                isMatched
+                  ? 'bg-amber-50 hover:bg-amber-100'
+                  : index % 2 === 0
+                    ? 'bg-white hover:bg-gray-50'
+                    : 'bg-gray-50 hover:bg-gray-100'
               }`}
             >
               <td className="px-4 py-2 text-gray-900 font-semibold border-r border-gray-200 truncate">
-                {row.key}
+                <HighlightedText text={row.key} query={searchQuery} />
               </td>
               <td className="px-4 py-2 text-gray-700 border-r border-gray-200 break-all font-mono text-xs max-w-xs whitespace-nowrap">
                 {editingPath === row.path ? (
@@ -141,7 +161,10 @@ export default function JSONTableView({ data, onEdit }: JSONTableViewProps) {
                     }}
                     className="cursor-pointer hover:bg-gray-200 px-1 rounded inline-block"
                   >
-                    {row.value.length > 50 ? row.value.substring(0, 50) + '...' : row.value}
+                    <HighlightedText
+                      text={row.value.length > 50 ? row.value.substring(0, 50) + '...' : row.value}
+                      query={searchQuery}
+                    />
                   </span>
                 )}
               </td>
@@ -157,13 +180,15 @@ export default function JSONTableView({ data, onEdit }: JSONTableViewProps) {
                           : 'bg-gray-100 text-gray-800'
                   }`}
                 >
-                  {row.type}
+                  <HighlightedText text={row.type} query={searchQuery} />
                 </span>
               </td>
               <td className="px-4 py-2 text-gray-600 text-xs font-mono truncate">
-                {row.path}
+                <HighlightedText text={row.path} query={searchQuery} />
               </td>
             </tr>
+              );
+            })()
           ))}
         </tbody>
       </table>

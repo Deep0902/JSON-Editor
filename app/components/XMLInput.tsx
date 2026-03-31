@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 interface XMLInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -13,6 +15,10 @@ export default function XMLInput({
   onValidate,
   onTryDemo,
 }: XMLInputProps) {
+  const inputref = useRef<any>(null);
+  useEffect(() => {
+    inputref.current.focus();
+  }, []);
   return (
     <div className="flex flex-col gap-3">
       <label
@@ -23,6 +29,7 @@ export default function XMLInput({
       </label>
       <textarea
         id="xml-input"
+        ref={inputref}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Paste your XML data here..."

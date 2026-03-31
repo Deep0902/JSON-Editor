@@ -4,7 +4,6 @@ import "./globals.css";
 import "./scroll.css";
 import Footer from "./components/Footer";
 
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -16,9 +15,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JSON/XML Editor",
+  title: "JSON & XML Editor",
   description:
     "A real-time JSON & XML editor with validation, tree view, table view, and editing capabilities without Ads!",
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
@@ -32,7 +36,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
-        <Footer/>
+        <Footer />
       </body>
     </html>
   );

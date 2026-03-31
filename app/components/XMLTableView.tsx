@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { type XMLNode } from '../utils/xmlValidator';
+import { HighlightedText, matchesSearch } from './ViewerSearch';
 
 interface XMLTableRow {
   label: string;
@@ -14,9 +15,10 @@ interface XMLTableRow {
 interface XMLTableViewProps {
   data: XMLNode;
   onEdit?: (path: string, value: string) => void;
+  searchQuery?: string;
 }
 
-function flattenXML(node: XMLNode, internalPath = 'root', displayPath = `/${node.tag}`): XMLTableRow[] {
+export function flattenXML(node: XMLNode, internalPath = 'root', displayPath = `/${node.tag}`): XMLTableRow[] {
   const rows: XMLTableRow[] = [
     {
       label: node.tag,
@@ -52,7 +54,7 @@ function flattenXML(node: XMLNode, internalPath = 'root', displayPath = `/${node
   return rows;
 }
 
-export default function XMLTableView({ data, onEdit }: XMLTableViewProps) {
+export default function XMLTableView({ data, onEdit, searchQuery = '' }: XMLTableViewProps) {
   const rows = useMemo(() => flattenXML(data), [data]);
   const [editingPath, setEditingPath] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -75,16 +77,34 @@ export default function XMLTableView({ data, onEdit }: XMLTableViewProps) {
         </thead>
         <tbody>
           {rows.map((row, index) => (
+            (() => {
+              const isMatched = matchesSearch(
+                searchQuery,
+                row.label,
+                row.value,
+                row.type,
+                row.displayPath,
+              );
+
+              return (
             <tr
               key={`${row.internalPath}-${index}`}
-              className={`border-b border-gray-200 hover:bg-gray-50 transition-colors ${
-                index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+              className={`border-b border-gray-200 transition-colors ${
+                isMatched
+                  ? 'bg-amber-50 hover:bg-amber-100'
+                  : index % 2 === 0
+                    ? 'bg-white hover:bg-gray-50'
+                    : 'bg-gray-50 hover:bg-gray-100'
               }`}
             >
-              <td className="px-4 py-2 text-gray-900 font-semibold border-r border-gray-200">{row.label}</td>
+              <td className="px-4 py-2 text-gray-900 font-semibold border-r border-gray-200">
+                <HighlightedText text={row.label} query={searchQuery} />
+              </td>
               <td className="px-4 py-2 text-gray-700 border-r border-gray-200 break-all font-mono text-xs max-w-xs whitespace-nowrap">
                 {row.type === 'element' ? (
-                  <span>{row.value}</span>
+                  <span>
+                    <HighlightedText text={row.value} query={searchQuery} />
+                  </span>
                 ) : editingPath === row.internalPath ? (
                   <input
                     autoFocus
@@ -106,7 +126,11 @@ export default function XMLTableView({ data, onEdit }: XMLTableViewProps) {
                     }}
                     className="cursor-pointer hover:bg-gray-200 px-1 rounded inline-block"
                   >
-                    {row.value || '(empty)'}
+                    <HighlightedText
+                      text={row.value}
+                      query={searchQuery}
+                      emptyFallback="(empty)"
+                    />
                   </span>
                 )}
               </td>
@@ -120,11 +144,15 @@ export default function XMLTableView({ data, onEdit }: XMLTableViewProps) {
                         : 'bg-gray-100 text-gray-800'
                   }`}
                 >
-                  {row.type}
+                  <HighlightedText text={row.type} query={searchQuery} />
                 </span>
               </td>
-              <td className="px-4 py-2 text-gray-600 text-xs font-mono truncate">{row.displayPath}</td>
+              <td className="px-4 py-2 text-gray-600 text-xs font-mono truncate">
+                <HighlightedText text={row.displayPath} query={searchQuery} />
+              </td>
             </tr>
+              );
+            })()
           ))}
         </tbody>
       </table>
