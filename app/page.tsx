@@ -198,10 +198,10 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Main Content - Side by Side */}
-        <div className="flex gap-8 mb-8">
+        {/* Main Content - Side by Side on Desktop, Stacked on Mobile */}
+        <div className="flex flex-col lg:flex-row gap-8 mb-8 min-h-[70vh]">
           {/* Left Column - Input */}
-          <div className="flex-1 bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <div className="w-full lg:w-1/2 bg-gray-50 p-6 rounded-lg border border-gray-200 flex flex-col">
             {activeMainTab === "json" ? (
               <JSONInput
                 value={jsonInput}
@@ -235,7 +235,7 @@ export default function Home() {
           {/* Right Column - Viewer */}
           <div
             ref={outputSectionRef}
-            className="flex-1 scroll-mt-24 bg-gray-50 p-6 rounded-lg border border-gray-200"
+            className="w-full lg:w-1/2 scroll-mt-24 bg-gray-50 p-6 rounded-lg border border-gray-200"
           >
             {activeMainTab === "json" ? (
               parsedJSONData === null ? (

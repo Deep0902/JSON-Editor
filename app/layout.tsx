@@ -19,9 +19,9 @@ export const metadata: Metadata = {
   description:
     "A real-time JSON & XML editor with validation, tree view, table view, and editing capabilities without Ads!",
   icons: {
-    icon: "/favicon.png",
-    shortcut: "/favicon.png",
-    apple: "/favicon.png",
+    icon: "/code.svg",
+    shortcut: "/code.svg",
+    apple: "/code.svg",
   },
 };
 

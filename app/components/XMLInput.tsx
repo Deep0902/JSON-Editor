@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import CodeMirror from "@uiw/react-codemirror";
+import { xml } from "@codemirror/lang-xml";
 
 interface XMLInputProps {
   value: string;
@@ -17,12 +19,7 @@ export default function XMLInput({
   onTryDemo,
   canCopy,
 }: XMLInputProps) {
-  const inputref = useRef<any>(null);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    inputref.current.focus();
-  }, []);
 
   const handleCopy = async () => {
     try {
@@ -35,21 +32,34 @@ export default function XMLInput({
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      <label
-        htmlFor="xml-input"
-        className="text-sm font-semibold text-gray-900"
-      >
+    <div className="flex flex-col gap-3 h-full">
+      <label className="text-sm font-semibold text-gray-900">
         Paste Your XML Data
       </label>
-      <textarea
-        id="xml-input"
-        ref={inputref}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Paste your XML data here..."
-        className="w-full h-48 p-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-gray-600 focus:ring-1 focus:ring-gray-400 font-mono text-sm resize-vertical"
-      />
+      <div className="flex-1 border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
+        <CodeMirror
+          value={value}
+          onChange={onChange}
+          extensions={[xml()]}
+          height="100%"
+          theme="light"
+          className="text-sm h-full"
+          basicSetup={{
+            lineNumbers: true,
+            highlightActiveLineGutter: true,
+            foldGutter: true,
+            dropCursor: true,
+            allowMultipleSelections: true,
+            indentOnInput: true,
+            bracketMatching: true,
+            closeBrackets: true,
+            autocompletion: true,
+            rectangularSelection: true,
+            highlightSelectionMatches: true,
+            searchKeymap: true,
+          }}
+        />
+      </div>
       <div className="flex gap-2">
         <button
           onClick={onValidate}
