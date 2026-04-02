@@ -65,7 +65,7 @@ export default function XMLTableView({ data, onEdit, searchQuery = '' }: XMLTabl
   };
 
   return (
-    <div className="overflow-x-auto bg-white border border-gray-200 rounded-lg" style={{ maxHeight: '400px' }}>
+    <div className="overflow-x-auto bg-white border border-gray-200 rounded-lg max-h-[inherit]">
       <table className="w-full border-collapse text-sm">
         <thead className="bg-gray-100 sticky top-0">
           <tr className="border-b border-gray-200">

@@ -277,7 +277,7 @@ export default function JSONTreeView({
     : Object.entries(data as Record<string, unknown>);
 
   return (
-    <div className="p-4 overflow-auto max-h-130 bg-white border border-gray-200 rounded-lg">
+    <div className="p-4 overflow-auto max-h-[inherit] bg-white border border-gray-200 rounded-lg">
       <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-gray-200">
         <div className="flex items-center gap-2">
           <span className="text-gray-600 font-bold">▼</span>

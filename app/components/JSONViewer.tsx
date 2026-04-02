@@ -12,6 +12,7 @@ interface JSONViewerProps {
 
 export default function JSONViewer({ data, onDataChange }: JSONViewerProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'tree' | 'table'>('tree');
 
   const handleEdit = (path: string, value: unknown) => {
     const newData = JSON.parse(JSON.stringify(data)); // Deep clone
@@ -67,13 +68,36 @@ export default function JSONViewer({ data, onDataChange }: JSONViewerProps) {
         placeholder="Search JSON keys, values, or paths"
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="min-w-0 overflow-auto max-h-130">
+      {/* View Mode Tabs */}
+      <div className="flex gap-2 border-b border-gray-300">
+        <button
+          onClick={() => setViewMode('tree')}
+          className={`px-4 py-2 font-semibold transition-colors duration-200 cursor-pointer text-sm ${
+            viewMode === 'tree'
+              ? 'border-b-2 border-gray-900 text-gray-900'
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          Tree View
+        </button>
+        <button
+          onClick={() => setViewMode('table')}
+          className={`px-4 py-2 font-semibold transition-colors duration-200 cursor-pointer text-sm ${
+            viewMode === 'table'
+              ? 'border-b-2 border-gray-900 text-gray-900'
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          Table View
+        </button>
+      </div>
+
+      <div className="min-w-0 max-h-96">
+        {viewMode === 'tree' ? (
           <JSONTreeView data={data} onEdit={handleEdit} searchQuery={searchQuery} />
-        </div>
-        <div className="min-w-0 overflow-auto max-h-130">
+        ) : (
           <JSONTableView data={data} onEdit={handleEdit} searchQuery={searchQuery} />
-        </div>
+        )}
       </div>
     </div>
   );

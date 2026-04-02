@@ -3,12 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import JSONInput from "./components/JSONInput";
 import JSONViewer from "./components/JSONViewer";
-import JSONEditor from "./components/JSONEditor";
 import XMLInput from "./components/XMLInput";
 import XMLViewer from "./components/XMLViewer";
-import XMLEditor from "./components/XMLEditor";
 import { isValidJSON, parseJSON } from "./utils/jsonValidator";
-import { isValidXML, parseXML, type XMLNode } from "./utils/xmlValidator";
+import {
+  isValidXML,
+  parseXML,
+  formatXML,
+  type XMLNode,
+} from "./utils/xmlValidator";
 
 export default function Home() {
   const [activeMainTab, setActiveMainTab] = useState<"json" | "xml">("json");
@@ -66,15 +69,19 @@ export default function Home() {
 
   const handleJSONInputChange = (value: string) => {
     setJsonInput(value);
+    setParsedJSONData(null);
     if (jsonError) setJsonError(null);
   };
 
   const handleJSONDataChange = (updatedData: unknown) => {
     setParsedJSONData(updatedData);
+    // Update the input field to reflect changes
+    setJsonInput(JSON.stringify(updatedData, null, 2));
   };
 
   const handleSaveJSONChanges = (updatedData: unknown) => {
     setParsedJSONData(updatedData);
+    setJsonInput(JSON.stringify(updatedData, null, 2));
     setJsonError(null);
   };
 
@@ -97,7 +104,7 @@ export default function Home() {
   };
 
   const demoXML = `<?xml version="1.0" encoding="UTF-8"?><user xmlns:xsi="http://www.w3.org"><name>Tom Cat</name><age>20</age><isActive>true</isActive><skills><skill>JS</skill><skill>React</skill></skills><address><city>NYC</city><zip>10001</zip></address><lastLogin xsi:nil="true"/></user>
-`
+`;
   const handleTryDemoXML = () => {
     setXmlInput(demoXML);
     setXmlError(null);
@@ -136,21 +143,27 @@ export default function Home() {
 
   const handleXMLInputChange = (value: string) => {
     setXmlInput(value);
+    setParsedXMLData(null);
     if (xmlError) setXmlError(null);
   };
 
   const handleXMLDataChange = (updatedData: XMLNode) => {
     setParsedXMLData(updatedData);
+    // Update the input field to reflect changes
+    const xmlString = formatXML(updatedData);
+    setXmlInput(xmlString);
   };
 
   const handleSaveXMLChanges = (updatedData: XMLNode) => {
     setParsedXMLData(updatedData);
+    const xmlString = formatXML(updatedData);
+    setXmlInput(xmlString);
     setXmlError(null);
   };
 
   return (
     <main className="min-h-screen bg-white">
-      <div className="px-12 py-8">
+      <div className="p-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
@@ -185,16 +198,17 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="flex flex-col gap-8 mb-8">
+        {/* Main Content - Side by Side */}
+        <div className="flex gap-8 mb-8">
           {/* Left Column - Input */}
-          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <div className="flex-1 bg-gray-50 p-6 rounded-lg border border-gray-200">
             {activeMainTab === "json" ? (
               <JSONInput
                 value={jsonInput}
                 onChange={handleJSONInputChange}
                 onValidate={handleValidateJSON}
                 onTryDemo={handleTryDemoJSON}
+                canCopy={parsedJSONData !== null}
               />
             ) : (
               <XMLInput
@@ -202,26 +216,26 @@ export default function Home() {
                 onChange={handleXMLInputChange}
                 onValidate={handleValidateXML}
                 onTryDemo={handleTryDemoXML}
+                canCopy={parsedXMLData !== null}
               />
             )}
+            {/* Error Message */}
+            {activeMainTab === "json" && jsonError && (
+              <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-500 rounded">
+                <p className="text-red-700 font-medium text-sm">{jsonError}</p>
+              </div>
+            )}
+            {activeMainTab === "xml" && xmlError && (
+              <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-500 rounded">
+                <p className="text-red-700 font-medium text-sm">{xmlError}</p>
+              </div>
+            )}
           </div>
-
-          {/* Error Message */}
-          {activeMainTab === "json" && jsonError && (
-            <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-500 rounded">
-              <p className="text-red-700 font-medium">{jsonError}</p>
-            </div>
-          )}
-          {activeMainTab === "xml" && xmlError && (
-            <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-500 rounded">
-              <p className="text-red-700 font-medium">{xmlError}</p>
-            </div>
-          )}
 
           {/* Right Column - Viewer */}
           <div
             ref={outputSectionRef}
-            className="scroll-mt-24 bg-gray-50 p-6 rounded-lg border border-gray-200"
+            className="flex-1 scroll-mt-24 bg-gray-50 p-6 rounded-lg border border-gray-200"
           >
             {activeMainTab === "json" ? (
               parsedJSONData === null ? (
@@ -252,24 +266,6 @@ export default function Home() {
             )}
           </div>
         </div>
-
-        {/* Editor Section - Full Width */}
-        {activeMainTab === "json" && parsedJSONData !== null && (
-          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-            <JSONEditor
-              initialData={parsedJSONData}
-              onSave={handleSaveJSONChanges}
-            />
-          </div>
-        )}
-        {activeMainTab === "xml" && parsedXMLData !== null && (
-          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-            <XMLEditor
-              initialData={parsedXMLData}
-              onSave={handleSaveXMLChanges}
-            />
-          </div>
-        )}
 
         {/* Features Info */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">

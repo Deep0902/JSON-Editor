@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface XMLInputProps {
   value: string;
   onChange: (value: string) => void;
   onValidate: () => void;
   onTryDemo: () => void;
+  canCopy: boolean;
 }
 
 export default function XMLInput({
@@ -14,11 +15,25 @@ export default function XMLInput({
   onChange,
   onValidate,
   onTryDemo,
+  canCopy,
 }: XMLInputProps) {
   const inputref = useRef<any>(null);
+  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
     inputref.current.focus();
   }, []);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy XML:", error);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-3">
       <label
@@ -42,6 +57,19 @@ export default function XMLInput({
         >
           Validate & Parse XML
         </button>
+        {canCopy && (
+          <button
+            onClick={handleCopy}
+            className={`px-6 py-2 font-semibold rounded-lg transition-colors duration-200 cursor-pointer ${
+              copied
+                ? "bg-gray-600 text-white"
+                : "bg-gray-200 text-gray-900 hover:bg-gray-300"
+            }`}
+            type="button"
+          >
+            {copied ? "Copied" : "Copy to Clipboard"}
+          </button>
+        )}
         <button
           onClick={onTryDemo}
           // className="px-6 py-2 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-200 transition-colors duration-200 w-fit border border-gray-300 cursor-pointer"
