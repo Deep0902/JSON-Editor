@@ -1,37 +1,44 @@
-# JSON-Editor
+# JSON/XML Editor
 
-A web application for editing and viewing JSON and XML data with real-time validation, tree/table views, and in-place editing.
+![JSON/XML Editor Showcase](./public/showcase.gif)
 
-## Features
+## Application Overview
 
-- JSON and XML support
-- Real-time validation
-- Tree and table views
-- In-place editing
-- Clean interface
-- Ad-free
+This is a browser-based tool that helps you paste, validate, and explore JSON or XML quickly.
+It is designed for day-to-day developer tasks like checking payloads, inspecting nested data, and correcting invalid input without switching between multiple tools.
+You can move between visual tree and table views, then edit values in place when you need fast fixes.
+The interface stays clean and focused so the workflow feels simple even with large documents.
+
+## Technical Overview
+
+- Built with Next.js and TypeScript.
+- Supports parallel JSON and XML flows with mirrored components for input, viewing, and editing.
+- Performs real-time validation before rendering structured views.
+- Provides tree and table renderers for both data formats.
+- Includes in-place editors to update nodes/values directly from the rendered view.
+- Uses shared utility validators to keep parsing and validation logic consistent.
 
 ## Installation
 
-1. Ensure Node.js is installed.
-2. Clone or download the project.
-3. Navigate to the project directory.
-4. Install dependencies:
+1. Install Node.js (LTS recommended).
+2. Clone this repository.
+3. Install dependencies:
 
-   ```
-   npm install
-   ```
+```bash
+npm install
+```
 
 ## Usage
 
 1. Start the development server:
 
-   ```
-   npm run dev
-   ```
+```bash
+npm run dev
+```
 
-2. Open `http://localhost:3000` in your browser.
-3. Select JSON or XML tab.
-4. Enter data in the input area.
-5. Click "Validate" to check validity.
-6. View and edit data in tree or table format.
+2. Open http://localhost:3000.
+3. Choose JSON or XML.
+4. Paste your data and validate.
+5. Explore and edit using tree or table views.
+
+*For more details, check out the [Full Changelog](https://github.com/Deep0902/JSON-Editor/releases)*

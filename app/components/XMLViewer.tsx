@@ -83,7 +83,7 @@ export default function XMLViewer({ data, onDataChange }: XMLViewerProps) {
   );
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 flex-1 h-full">
       <label className="text-sm font-semibold text-gray-900">XML Output (Editable)</label>
       <SearchToolbar
         query={searchQuery}
@@ -116,7 +116,7 @@ export default function XMLViewer({ data, onDataChange }: XMLViewerProps) {
         </button>
       </div>
 
-      <div className="min-w-0 max-h-96">
+      <div className="flex-1 min-w-0 overflow-auto">
         {viewMode === 'tree' ? (
           <XMLTreeView data={data} onEdit={handleEdit} searchQuery={searchQuery} />
         ) : (

@@ -59,7 +59,7 @@ export default function JSONViewer({ data, onDataChange }: JSONViewerProps) {
   );
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 flex-1 h-full">
       <label className="text-sm font-semibold text-gray-900">JSON Output (Editable)</label>
       <SearchToolbar
         query={searchQuery}
@@ -92,7 +92,7 @@ export default function JSONViewer({ data, onDataChange }: JSONViewerProps) {
         </button>
       </div>
 
-      <div className="min-w-0 max-h-96">
+      <div className="flex-1 min-w-0 overflow-auto">
         {viewMode === 'tree' ? (
           <JSONTreeView data={data} onEdit={handleEdit} searchQuery={searchQuery} />
         ) : (

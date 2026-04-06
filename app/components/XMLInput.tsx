@@ -60,17 +60,17 @@ export default function XMLInput({
           }}
         />
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <button
           onClick={onValidate}
-          className="px-6 py-2 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors duration-200 w-fit"
+          className="px-3 py-2 text-sm sm:text-base sm:px-6 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors duration-200 w-fit whitespace-nowrap"
         >
           Validate & Parse XML
         </button>
         {canCopy && (
           <button
             onClick={handleCopy}
-            className={`px-6 py-2 font-semibold rounded-lg transition-colors duration-200 cursor-pointer ${
+            className={`px-3 py-2 text-sm sm:text-base sm:px-6 font-semibold rounded-lg transition-colors duration-200 cursor-pointer whitespace-nowrap ${
               copied
                 ? "bg-gray-600 text-white"
                 : "bg-gray-200 text-gray-900 hover:bg-gray-300"
@@ -82,8 +82,7 @@ export default function XMLInput({
         )}
         <button
           onClick={onTryDemo}
-          // className="px-6 py-2 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-200 transition-colors duration-200 w-fit border border-gray-300 cursor-pointer"
-          className="px-6 py-2 font-semibold rounded-lg transition-colors duration-200 bg-gray-200 text-gray-900 hover:bg-gray-300 cursor-pointer"
+          className="px-3 py-2 text-sm sm:text-base sm:px-6 font-semibold rounded-lg border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200 cursor-pointer whitespace-nowrap"
           type="button"
         >
           Try a demo!

@@ -18,6 +18,50 @@ export default function Home() {
   const outputSectionRef = useRef<HTMLDivElement | null>(null);
   const pendingAutoScrollRef = useRef(false);
 
+  const getMainTabIcon = (tab: "json" | "xml") => {
+    if (tab === "json") {
+      return (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8 9l-3 3 3 3M16 9l3 3-3 3M13 7l-2 10"
+          />
+        </svg>
+      );
+    }
+
+    return (
+      <svg
+        className="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M7 8h10M7 12h6m-6 4h10"
+        />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M5 6h14a1 1 0 011 1v10a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1z"
+        />
+      </svg>
+    );
+  };
+
   const [jsonInput, setJsonInput] = useState("");
   const [parsedJSONData, setParsedJSONData] = useState<unknown | null>(null);
   const [jsonError, setJsonError] = useState<string | null>(null);
@@ -163,7 +207,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-white">
-      <div className="p-8">
+      <div className="p-4 pb-0 md:p-8 md:pb-0">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
@@ -175,7 +219,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="flex gap-2 border-b border-gray-200 mb-8">
+        <div className="hidden md:flex gap-2 border-b border-gray-200 mb-8">
           <button
             onClick={() => setActiveMainTab("json")}
             className={`px-4 py-2 font-semibold transition-colors duration-200 cursor-pointer ${
@@ -199,9 +243,9 @@ export default function Home() {
         </div>
 
         {/* Main Content - Side by Side on Desktop, Stacked on Mobile */}
-        <div className="flex flex-col lg:flex-row gap-8 mb-8 min-h-[70vh]">
+        <div className="flex flex-col md:flex-row gap-8 mb-8 min-h-[70vh]">
           {/* Left Column - Input */}
-          <div className="w-full lg:w-1/2 bg-gray-50 p-6 rounded-lg border border-gray-200 flex flex-col">
+          <div className="w-full md:w-1/2 bg-gray-50 p-6 rounded-lg border border-gray-200 flex flex-col">
             {activeMainTab === "json" ? (
               <JSONInput
                 value={jsonInput}
@@ -235,12 +279,12 @@ export default function Home() {
           {/* Right Column - Viewer */}
           <div
             ref={outputSectionRef}
-            className="w-full lg:w-1/2 scroll-mt-24 bg-gray-50 p-6 rounded-lg border border-gray-200"
+            className="w-full md:w-1/2 scroll-mt-24 bg-gray-50 p-6 rounded-lg border border-gray-200 flex flex-col flex-1"
           >
             {activeMainTab === "json" ? (
               parsedJSONData === null ? (
-                <div className="text-center py-12 text-gray-500">
-                  <p className="text-sm">
+                <div className="text-center py-12 text-gray-500 mt-auto mb-auto ">
+                  <p className="text-xl">
                     Paste JSON and click &quot;Validate & Parse JSON&quot; to
                     view the data
                   </p>
@@ -252,8 +296,8 @@ export default function Home() {
                 />
               )
             ) : parsedXMLData === null ? (
-              <div className="text-center py-12 text-gray-500">
-                <p className="text-sm">
+              <div className="text-center py-12 text-gray-500 mt-auto mb-auto ">
+                <p className="text-xl">
                   Paste XML and click &quot;Validate & Parse XML&quot; to view
                   the data
                 </p>
@@ -289,6 +333,41 @@ export default function Home() {
               Edit structured data and switch between tree and table views
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/40 backdrop-blur-xl border-t border-white/60 z-20 shadow-[0_-8px_24px_rgba(0,0,0,0.12)] supports-[backdrop-filter]:bg-white/35">
+        <div className="flex items-center justify-around h-16">
+          {(["json", "xml"] as const).map((tab) => {
+            const isActive = activeMainTab === tab;
+            const label = tab.toUpperCase();
+
+            return (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveMainTab(tab)}
+                className={`flex flex-col items-center justify-center flex-1 h-full transition-all duration-300 relative ${
+                  isActive ? "text-gray-900" : "text-gray-600"
+                }`}
+                aria-label={`Switch to ${label}`}
+                aria-current={isActive ? "page" : undefined}
+              >
+                <div
+                  className={`flex flex-col items-center transition-transform duration-300 ${
+                    isActive ? "scale-105" : ""
+                  }`}
+                >
+                  {getMainTabIcon(tab)}
+                  <span className="text-xs mt-1 font-medium">{label}</span>
+                </div>
+                {isActive && (
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-14 h-1 bg-gray-900 rounded-t-full" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     </main>
