@@ -270,7 +270,7 @@ export default function XMLTreeView({
   };
 
   return (
-    <div className="p-4 overflow-auto max-h-[inherit] bg-white border border-gray-200 rounded-lg">
+    <div className="p-4 overflow-auto bg-white border border-gray-200 rounded-lg overflow-y-auto max-h-[50vh]">
       <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200">
         <span className="text-md font-medium">Tree View</span>
         <div className="ml-auto flex items-center gap-2">
